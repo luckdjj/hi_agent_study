@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一章 初识智能体 - 详细学习地图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .priority-section {
+            margin-bottom: 40px;
+        }
+
+        .priority-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .priority-header:hover {
+            transform: translateX(5px);
+        }
+
+        .p0-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .p1-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .p2-header {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .priority-badge {
+            font-size: 1.5em;
+            font-weight: bold;
+            min-width: 60px;
+        }
+
+        .priority-title {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .priority-desc {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-left: auto;
+        }
+
+        .tree {
+            margin-left: 20px;
+        }
+
+        .node {
+            margin: 15px 0;
+            padding-left: 20px;
+            border-left: 3px solid #e2e8f0;
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .node-header:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .toggle-icon {
+            font-size: 1em;
+            color: #718096;
+            transition: transform 0.3s ease;
+            min-width: 20px;
+        }
+
+        .toggle-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .node-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1em;
+        }
+
+        .node-content {
+            display: none;
+            margin-top: 15px;
+            padding: 25px;
+            background: #ffffff;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            color: #4a5568;
+            line-height: 1.9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .node-content.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .node-content h3 {
+            color: #2d3748;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .node-content h4 {
+            color: #4a5568;
+            margin: 15px 0 8px 0;
+            font-size: 1.05em;
+        }
+
+        .node-content p {
+            margin: 12px 0;
+        }
+
+        .node-content ul, .node-content ol {
+            margin: 12px 0;
+            padding-left: 25px;
+        }
+
+        .node-content li {
+            margin: 8px 0;
+        }
+
+        .node-content pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+
+        .node-content code {
+            font-family: 'Courier New', 'Consolas', monospace;
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .node-content pre code {
+            background: transparent;
+            color: #e2e8f0;
+            padding: 0;
+        }
+
+        .highlight-box {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .info-box {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .success-box {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            color: #718096;
+        }
+
+        strong {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .example {
+            background: #faf5ff;
+            border-left: 4px solid #9f7aea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 第一章 初识智能体</h1>
+        <p class="subtitle">详细学习地图 - 根据原文深度解析每个知识点</p>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                <span><strong>P0</strong> - 必须懂，不懂后面没法继续</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                <span><strong>P1</strong> - 重要但可以边用边学</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                <span><strong>P2</strong> - 了解即可，用到再深入</span>
+            </div>
+        </div>
+
+        <!-- P0 Section -->
+        <div class="priority-section">
+            <div class="priority-header p0-header">
+                <span class="priority-badge">P0</span>
+                <span class="priority-title">核心必学</span>
+                <span class="priority-desc">动手做出第一个智能体的最小必要知识</span>
+            </div>
+
+            <div class="tree">
+                <!-- 1.1 什么是智能体 -->
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.1 什么是智能体？</span>
+                    </div>
+                    <div class="node-content">
+                        <h3>核心定义</h3>
+                        <p>在人工智能领域，<strong>智能体（Agent）</strong>被定义为：</p>
+                        <div class="highlight-box">
+                            <p>任何能够通过<strong>传感器（Sensors）</strong>感知其所处<strong>环境（Environment）</strong>，并<strong>自主</strong>地通过<strong>执行器（Actuators）</strong>采取<strong>行动（Action）</strong>以达成特定目标的实体。</p>
+                        </div>
+
+                        <h3>四个基本要素</h3>
+                        <ol>
+                            <li>
+                                <strong>环境（Environment）</strong>
+                                <p>智能体所处的外部世界。对于自动驾驶汽车，环境是动态变化的道路交通；对于一个交易算法，环境则是瞬息万变的金融市场。</p>
+                            </li>
+                            <li>
+                                <strong>传感器（Sensors）</strong>
+                                <p>智能体通过传感器持续地感知环境状态。摄像头、麦克风、雷达或各类 API 返回的数据流，都是其感知能力的延伸。</p>
+                            </li>
+                            <li>
+                                <strong>执行器（Actuators）</strong>
+                                <p>智能体通过执行器来改变环境的状态。执行器可以是物理设备（如机械臂、方向盘）或虚拟工具（如执行一段代码、调用一个服务）。</p>
+                            </li>
+                            <li>
+                                <strong>自主性（Autonomy）</strong>
+                                <p>真正赋予智能体"智能"的核心。智能体并非只是被动响应外部刺激或严格执行预设指令的程序，它能够基于其感知和内部状态进行独立决策，以达成其设计目标。</p>
+                            </li>
+                        </ol>
+
+                        <div class="info-box">
+                            <strong>💡 关键理解：</strong>
+                            <p>这种从感知到行动的闭环，构成了所有智能体行为的基础。智能体不是孤立的，而是与环境持续交互的动态系统。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.1.2 大语言模型驱动的新范式 -->
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.1.2 大语言模型驱动的新范式</span>
+                    </div>
+                    <div class="node-content">
+                        <h3>范式转变</h3>
+                        <p>以 <strong>GPT（Generative Pre-trained Transformer）</strong>为代表的大语言模型的出现，正在显著改变智能体的构建方法与能力边界。</p>
+
+                        <h3>传统智能体 vs LLM 智能体</h3>
+                        <table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+                            <tr style="background: #f7fafc;">
+                                <th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left;">维度</th>
+                                <th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left;">传统智能体</th>
+                                <th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left;">LLM 智能体</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;"><strong>核心引擎</strong></td>
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;">显式编程规则</td>
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;">隐式学习的神经网络</td>
+                            </tr>
+                            <tr style="background: #f7fafc;">
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;"><strong>知识来源</strong></td>
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;">人工构建知识库</td>
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;">海量数据预训练</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;"><strong>交互方式</strong></td>
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;">结构化指令</td>
+                                <td style="padding: 12px; border: 1px solid #e2e8f0;">自然语言对话</td>
+                            </tr>
+                        </table>
+
+                        <h3>LLM 智能体的三大核心能力</h3>
+
+                        <h4>1. 规划与推理（Planning & Reasoning）</h4>
+                        <p>智能体首先会将高层级目标分解为一系列逻辑子任务。例如，当接收到"规划一次厦门之旅"这样的模糊指令时，它会自动分解为：</p>
+                        <pre><code>[确认出行偏好] → [查询目的地信息] → [制定行程草案] → [预订票务住宿]</code></pre>
+                        <p>这是一个内在的、由模型驱动的规划过程。</p>
+
+                        <h4>2. 工具使用（Tool Use）</h4>
+                        <p>在执行规划时，智能体识别到信息缺口，会主动调用外部工具来补全。例如：</p>
+                        <ul>
+                            <li>调用天气查询接口获取实时天气</li>
+                            <li>基于"预报有雨"这一信息，在后续规划中倾向于推荐室内活动</li>
+                        </ul>
+
+                        <h4>3. 动态修正（Dynamic Adjustment）</h4>
+                        <p>在交互过程中，智能体会将用户的反馈（如"这家酒店超出预算"）视为新的约束，并据此调整后续的行动，重新搜索并推荐符合新要求的选项。</p>
+
+                        <div class="success-box">
+                            <strong>✅ 核心转变：</strong>
+                            <p>我们正从开发专用自动化工具转向构建能自主解决问题的系统。核心不再是编写代码，而是引导一个通用的"大脑"去规划、行动和学习。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.2.2 智能体的运行机制 -->
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.2.2 智能体的运行机制</span>
+                    </div>
+                    <div class="node-content">
+                        <h3>智能体循环（Agent Loop）</h3>
+                        <p>智能体并非一次性完成任务，而是通过一个持续的循环与环境进行交互。这个核心机制被称为<strong>智能体循环（Agent Loop）</strong>，它描述了智能体与环境之间的动态交互过程。</p>
+
+                        <h3>循环的四个阶段</h3>
+
+                        <h4>1. 感知（Perception）</h4>
+                        <p>这是循环的起点。智能体通过其传感器（例如，API 的监听端口、用户输入接口）接收来自环境的输入信息。</p>
+                        <ul>
+                            <li>这些信息，即<strong>观察（Observation）</strong></li>
+                            <li>既可以是用户的初始指令</li>
+                            <li>也可以是上一步行动所导致的环境状态变化反馈</li>
+                        </ul>
+
+                        <h4>2. 思考（Thought）</h4>
+                        <p>接收到观察信息后，智能体进入其核心决策阶段。对于 LLM 智能体而言，这通常是由大语言模型驱动的内部推理过程。</p>
+                        <p>"思考"阶段可进一步细分为两个关键环节：</p>
+                        <ul>
+                            <li>
+                                <strong>规划（Planning）</strong>
+                                <p>智能体基于当前的观察和其内部记忆，更新对任务和环境的理解，并制定或调整一个行动计划。这可能涉及将复杂目标分解为一系列更具体的子任务。</p>
+                            </li>
+                            <li>
+                                <strong>工具选择（Tool Selection）</strong>
+                                <p>根据当前计划，智能体从其可用的工具库中，选择最适合执行下一步骤的工具，并确定调用该工具所需的具体参数。</p>
+                            </li>
+                        </ul>
+
+                        <h4>3. 行动（Action）</h4>
+                        <p>决策完成后，智能体通过其执行器（Actuators）执行具体的行动。这通常表现为调用一个选定的工具（如代码解释器、搜索引擎 API），从而对环境施加影响，意图改变环境的状态。</p>
+
+                        <h4>4. 观察（Observation）</h4>
+                        <p>行动并非循环的终点。智能体的行动会引起<strong>环境（Environment）</strong>的<strong>状态变化（State Change）</strong>，环境随即会产生一个新的<strong>观察（Observation）</strong>作为结果反馈。</p>
+                        <p>这个新的观察又会在下一轮循环中被智能体的感知系统捕获，形成一个持续的闭环。</p>
+
+                        <div class="info-box">
+                            <strong>🔄 循环的本质：</strong>
+                            <p>智能体正是通过不断重复这一循环，逐步推进任务，从初始状态向目标状态演进。这个循环会一直持续，直到达成目标或满足终止条件。</p>
+                        </div>
+
+                        <div class="example">
+                            <strong>📝 实例：智能旅行助手</strong>
+                            <ol>
+                                <li><strong>感知</strong>：接收用户请求"查询北京天气并推荐景点"</li>
+                                <li><strong>思考</strong>：规划分两步 → 先查天气，再推荐景点</li>
+                                <li><strong>行动</strong>：调用 get_weather("北京")</li>
+                                <li><strong>观察</strong>：获得"晴天，25度"</li>
+                                <li>进入下一轮循环...</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.2.3 智能体的感知与行动 -->
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.2.3 智能体的感知与行动</span>
+                    </div>
+                    <div class="node-content">
+                        <h3>Thought-Action-Observation 交互协议</h3>
+                        <p>在工程实践中，为了让 LLM 能够有效驱动智能体循环，我们需要一套明确的<strong>交互协议（Interaction Protocol）</strong>来规范其与环境之间的信息交换。</p>
+
+                        <h3>协议的三个核心部分</h3>
+
+                        <h4>1. Thought（思考）</h4>
+                        <p>这是智能体内部决策的"快照"。它以自然语言形式阐述了：</p>
+                        <ul>
+                            <li>智能体如何分析当前情境</li>
+                            <li>回顾上一步的观察结果</li>
+                            <li>进行自我反思与问题分解</li>
+                            <li>最终规划出下一步的具体行动</li>
+                        </ul>
+
+                        <h4>2. Action（行动）</h4>
+                        <p>这是智能体基于思考后，决定对环境施加的具体操作，通常以函数调用的形式表示。</p>
+
+                        <h4>3. Observation（观察）</h4>
+                        <p>环境对行动的反馈。原始的机器可读数据（如 JSON）会被处理并封装成简洁、清晰的自然语言文本。</p>
+
+                        <h3>完整交互示例</h3>
+                        <pre><code>Thought: 用户想知道北京的天气。我需要调用天气查询工具。
+Action: get_weather("北京")
+Observation: 北京当前天气为晴，气温25摄氏度，微风。</code></pre>
+
+                        <h3>工作流程详解</h3>
+                        <ol>
+                            <li>
+                                <strong>LLM 生成输出</strong>
+                                <p>智能体生成包含 Thought 和 Action 的结构化文本</p>
+                            </li>
+                            <li>
+                                <strong>解析器捕获指令</strong>
+                                <p>外部的<strong>解析器（Parser）</strong>会捕捉到 Action 字段，并调用相应的函数</p>
+                            </li>
+                            <li>
+                                <strong>执行并获取结果</strong>
+                                <p>例如，<code>get_weather</code>函数返回一个包含详细天气数据的 JSON 对象</p>
+                            </li>
+                            <li>
+                                <strong>封装为 Observation</strong>
+                                <p>感知系统将原始输出处理成自然语言文本</p>
+                            </li>
+                            <li>
+                                <strong>反馈给智能体</strong>
+                                <p>这段 Observation 文本会被反馈给智能体，作为下一轮循环的输入</p>
+                            </li>
+                        </ol>
+
+                        <div class="success-box">
+                            <strong>✅ 核心价值：</strong>
+                            <p>通过这个由 Thought、Action、Observation 构成的严谨循环，LLM 智能体得以将内部的语言推理能力，与外部环境的真实信息和工具操作能力有效地结合起来。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.3 动手体验 -->
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.3 动手体验：5分钟实现第一个智能体</span>
+                    </div>
+                    <div class="node-content">
+                        <h3>项目目标</h3>
+                        <p>构建一个能处理分步任务的<strong>智能旅行助手</strong>。</p>
+                        <div class="highlight-box">
+                            <strong>用户任务：</strong>
+                            <p>"你好，请帮我查询一下今天北京的天气，然后根据天气推荐一个合适的旅游景点。"</p>
+                        </div>
+
+                        <h3>1.3.1 准备工作</h3>
+
+                        <h4>安装依赖</h4>
+                        <pre><code>pip install requests tavily-python openai</code></pre>
+                        <ul>
+                            <li><code>requests</code>：HTTP 库，用于访问网络 API</li>
+                            <li><code>tavily-python</code>：AI 搜索 API 客户端，获取实时搜索结果</li>
+                            <li><code>openai</code>：OpenAI 官方 Python SDK，调用 GPT 等大语言模型</li>
+                        </ul>
+
+                        <h4>指令模板（System Prompt）</h4>
+                        <p>驱动真实 LLM 的关键在于<strong>提示工程（Prompt Engineering）</strong>。我们需要设计一个"指令模板"，告诉 LLM：</p>
+                        <ul>
+                            <li>它应该扮演什么角色</li>
+                            <li>拥有哪些工具</li>
+                            <li>如何格式化它的思考和行动</li>
+                        </ul>
+
+                        <pre><code>AGENT_SYSTEM_PROMPT = """
+你是一个智能旅行助手。你的任务是分析用户的请求，并使用可用工具一步步地解决问题。
+
+# 可用工具:
+- `get_weather(city: str)`: 查询指定城市的实时天气。
+- `get_attraction(city: str, weather: str)`: 根据城市和天气搜索推荐的旅游景点。
+
+# 输出格式要求:
+你的每次回复必须严格遵循以下格式，包含一对Thought和Action：
+
+Thought: [你的思考过程和下一步计划]
+Action: [你要执行的具体行动]
+
+Action的格式必须是以下之一：
+1. 调用工具：function_name(arg_name="arg_value")
+2. 结束任务：Finish[最终答案]
+
+# 重要提示:
+- 每次只输出一对Thought-Action
+- Action必须在同一行，不要换行
+- 当收集到足够信息可以回答用户问题时，必须使用 Action: Finish[最终答案] 格式结束
+
+请开始吧！
+"""</code></pre>
+
+                        <h4>工具 1：查询真实天气</h4>
+                        <p>使用免费的天气查询服务 <code>wttr.in</code>，它能以 JSON 格式返回指定城市的天气数据。</p>
+                        <pre><code>import requests
+
+def get_weather(city: str) -> str:
+    """通过调用 wttr.in API 查询真实的天气信息。"""
+    url = f"https://wttr.in/{city}?format=j1"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+
+        current_condition = data['current_condition'][0]
+        weather_desc = current_condition['weatherDesc'][0]['value']
+        temp_c = current_condition['temp_C']
+
+        return f"{city}当前天气:{weather_desc}，气温{temp_c}摄氏度"
+
+    except requests.exceptions.RequestException as e:
+        return f"错误:查询天气时遇到网络问题 - {e}"
+    except (KeyError, IndexError) as e:
+        return f"错误:解析天气数据失败，可能是城市名称无效 - {e}"</code></pre>
+
+                        <h4>工具 2：搜索并推荐旅游景点</h4>
+                        <p>使用 Tavily Search API 根据城市和天气状况搜索合适的景点。</p>
+                        <pre><code>import os
+from tavily import TavilyClient
+
+def get_attraction(city: str, weather: str) -> str:
+    """根据城市和天气，使用Tavily Search API搜索并返回景点推荐。"""
+    api_key = os.environ.get("TAVILY_API_KEY")
+    if not api_key:
+        return "错误:未配置TAVILY_API_KEY环境变量。"
+
+    tavily = TavilyClient(api_key=api_key)
+    query = f"'{city}' 在'{weather}'天气下最值得去的旅游景点推荐及理由"
+
+    try:
+        response = tavily.search(query=query, search_depth="basic", include_answer=True)
+
+        if response.get("answer"):
+            return response["answer"]
+
+        formatted_results = []
+        for result in response.get("results", []):
+            formatted_results.append(f"- {result['title']}: {result['content']}")
+
+        if not formatted_results:
+            return "抱歉，没有找到相关的旅游景点推荐。"
+
+        return "根据搜索，为您找到以下信息:\n" + "\n".join(formatted_results)
+
+    except Exception as e:
+        return f"错误:执行Tavily搜索时出现问题 - {e}"
+
+# 工具字典
+available_tools = {
+    "get_weather": get_weather,
+    "get_attraction": get_attraction,
+}</code></pre>
+
+                        <h3>1.3.2 接入大语言模型</h3>
+                        <p>实现一个通用的客户端，可以连接到任何兼容 OpenAI 接口规范的 LLM 服务。</p>
+                        <pre><code>from openai import OpenAI
+
+class OpenAICompatibleClient:
+    """用于调用任何兼容OpenAI接口的LLM服务的客户端。"""
+    def __init__(self, model: str, api_key: str, base_url: str):
+        self.model = model
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
+
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        """调用LLM API来生成回应。"""
+        print("正在调用大语言模型...")
+        try:
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': prompt}
+            ]
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                stream=False
+            )
+            answer = response.choices[0].message.content
+            print("大语言模型响应成功。")
+            return answer
+        except Exception as e:
+            print(f"调用LLM API时发生错误: {e}")
+            return "错误:调用语言模型服务时出错。"</code></pre>
+
+                        <h3>1.3.3 执行行动循环</h3>
+                        <p>主循环整合所有组件，通过格式化后的 Prompt 驱动 LLM 进行决策。</p>
+                        <pre><code>import re
+
+# 配置LLM客户端
+API_KEY = "YOUR_API_KEY"
+BASE_URL = "YOUR_BASE_URL"
+MODEL_ID = "YOUR_MODEL_ID"
+os.environ['TAVILY_API_KEY'] = "YOUR_TAVILY_API_KEY"
+
+llm = OpenAICompatibleClient(
+    model=MODEL_ID,
+    api_key=API_KEY,
+    base_url=BASE_URL
+)
+
+# 初始化
+user_prompt = "你好，请帮我查询一下今天北京的天气，然后根据天气推荐一个合适的旅游景点。"
+prompt_history = [f"用户请求: {user_prompt}"]
+
+print(f"用户输入: {user_prompt}\n" + "="*40)
+
+# 运行主循环
+for i in range(5):  # 设置最大循环次数
+    print(f"--- 循环 {i+1} ---\n")
+
+    # 构建Prompt
+    full_prompt = "\n".join(prompt_history)
+
+    # 调用LLM进行思考
+    llm_output = llm.generate(full_prompt, system_prompt=AGENT_SYSTEM_PROMPT)
+    print(f"模型输出:\n{llm_output}\n")
+    prompt_history.append(llm_output)
+
+    # 解析并执行行动
+    action_match = re.search(r"Action: (.*)", llm_output, re.DOTALL)
+    if not action_match:
+        observation = "错误: 未能解析到 Action 字段。"
+        observation_str = f"Observation: {observation}"
+        print(f"{observation_str}\n" + "="*40)
+        prompt_history.append(observation_str)
+        continue
+
+    action_str = action_match.group(1).strip()
+
+    if action_str.startswith("Finish"):
+        final_answer = re.match(r"Finish\[(.*)\]", action_str).group(1)
+        print(f"任务完成，最终答案: {final_answer}")
+        break
+
+    tool_name = re.search(r"(\w+)\(", action_str).group(1)
+    args_str = re.search(r"\((.*)\)", action_str).group(1)
+    kwargs = dict(re.findall(r'(\w+)="([^"]*)"', args_str))
+
+    if tool_name in available_tools:
+        observation = available_tools[tool_name](**kwargs)
+    else:
+        observation = f"错误:未定义的工具 '{tool_name}'"
+
+    # 记录观察结果
+    observation_str = f"Observation: {observation}"
+    print(f"{observation_str}\n" + "="*40)
+    prompt_history.append(observation_str)</code></pre>
+
+                        <h3>1.3.4 运行案例分析</h3>
+                        <p>以下是一个成功的智能体执行流程示例：</p>
+                        <pre><code>用户输入: 你好，请帮我查询一下今天北京的天气，然后根据天气推荐一个合适的旅游景点。
+========================================
+--- 循环 1 ---
+
+模型输出:
+Thought: 首先需要获取北京今天的天气情况，之后再根据天气情况来推荐旅游景点。
+Action: get_weather(city="北京")
+
+Observation: 北京当前天气:Sunny，气温26摄氏度
+========================================
+--- 循环 2 ---
+
+模型输出:
+Thought: 现在已经知道了北京今天的天气是晴朗且温度适中，接下来可以基于这个信息来推荐一个适合的旅游景点了。
+Action: get_attraction(city="北京", weather="Sunny")
+
+Observation: 北京在晴天最值得去的旅游景点是颐和园，因其美丽的湖景和古建筑。另一个推荐是长城，因其壮观的景观和历史意义。
+========================================
+--- 循环 3 ---
+
+模型输出:
+Thought: 已经获得了两个适合晴天游览的景点建议，现在可以根据这些信息给用户提供满意的答复。
+Action: Finish[今天北京的天气是晴朗的，气温26摄氏度，非常适合外出游玩。我推荐您去颐和园欣赏美丽的湖景和古建筑，或者前往长城体验其壮观的景观和深厚的历史意义。希望您有一个愉快的旅行！]
+
+任务完成，最终答案: 今天北京的天气是晴朗的，气温26摄氏度，非常适合外出游玩。我推荐您去颐和园欣赏美丽的湖景和古建筑，或者前往长城体验其壮观的景观和深厚的历史意义。希望您有一个愉快的旅行！</code></pre>
+
+                        <div class="success-box">
+                            <strong>🎯 核心能力展示：</strong>
+                            <ul>
+                                <li><strong>任务分解</strong>：将复杂任务拆解为"查天气"和"推荐景点"两步</li>
+                                <li><strong>工具调用</strong>：正确选择并调用 get_weather 和 get_attraction</li>
+                                <li><strong>上下文理解</strong>：将第一步的天气结果作为第二步的输入</li>
+                                <li><strong>结果合成</strong>：整合所有信息，生成完整的用户友好回答</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-box">
+                            <strong>💡 关键启示：</strong>
+                            <p>这个简单的旅行助手案例，集中演示了基于 Thought-Action-Observation 范式的智能体所具备的基本能力。正是通过这个循环的不断迭代，智能体才得以将一个模糊的用户意图，转化为一系列具体、可执行的步骤，并最终达成目标。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- P1 Section -->
+        <div class="priority-section">
+            <div class="priority-header p1-header">
+                <span class="priority-badge">P1</span>
+                <span class="priority-title">进阶理解</span>
+                <span class="priority-desc">理解智能体生态和选型的背景知识</span>
+            </div>
+
+            <div class="tree">
+                <!-- 1.1.1 传统视角下的智能体 -->
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.1.1 传统视角下的智能体</span>
+                    </div>
+                    <div class="node-content">
+                        <h3>演进路径概述</h3>
+                        <p>在大语言模型热潮出现之前，人工智能的先驱们已经对"智能体"这一概念进行了数十年的探索与构建。这些传统智能体经历了一条从简单到复杂、从被动反应到主动学习的清晰演进路线。</p>
+
+                        <h3>1. 反射智能体（Simple Reflex Agent）</h3>
+                        <p>这是演进的起点，结构最简单的智能体类型。</p>
+                        <ul>
+                            <li><strong>决策核心</strong>：由工程师明确设计的"条件-动作"规则</li>
+                            <li><strong>工作方式</strong>：完全依赖于当前的感知输入，不具备记忆或预测能力</li>
+                            <li><strong>经典案例</strong>：自动恒温器
+                                <ul>
+                                    <li>若传感器感知的室温高于设定值 → 启动制冷系统</li>
+                                    <li>若室温低于设定值 → 启动加热系统</li>
+                                </ul>
+                            </li>
+                            <li><strong>优势</strong>：可靠且高效，响应速度快</li>
+                            <li><strong>局限</strong>：像一种数字化的本能，无法应对需要理解上下文的复杂任务</li>
+                        </ul>
+
+                        <h3>2. 基于模型的反射智能体（Model-Based Reflex Agent）</h3>
+                        <p>为了解决"当前状态不足以作为决策全部依据"的问题，引入了"状态"的概念。</p>
+                        <ul>
+                            <li><strong>核心特征</strong>：拥有一个内部的<strong>世界模型（World Model）</strong></li>
+                            <li><strong>世界模型的作用</strong>：追踪和理解环境中那些无法被直接感知的方面</li>
+                            <li><strong>回答的问题</strong>："世界现在是什么样子的？"</li>
+                            <li><strong>经典案例</strong>：隧道中的自动驾驶汽车
+                                <ul>
+                                    <li>即便摄像头暂时无法感知到前方的车辆</li>
+                                    <li>内部模型依然会维持对那辆车存在、速度和预估位置的判断</li>
+                                </ul>
+                            </li>
+                            <li><strong>进步意义</strong>：拥有了初级的"记忆"，决策不再仅仅依赖于瞬时感知</li>
+                        </ul>
+
+                        <h3>3. 基于目标的智能体（Goal-Based Agent）</h3>
+                        <p>仅仅理解世界还不够，智能体需要有明确的目标。</p>
+                        <ul>
+                            <li><strong>核心特征</strong>：行为不再是被动地对环境做出反应，而是主动地、有预见性地选择行动</li>
+                            <li><strong>回答的问题</strong>："我应该做什么才能达成目标？"</li>
+                            <li><strong>核心能力</strong>：对未来的考量与规划（Planning）</li>
+                            <li><strong>经典案例</strong>：GPS 导航系统
+                                <ul>
+                                    <li>目标：到达公司</li>
+                                    <li>基于地图数据（世界模型）</li>
+                                    <li>通过搜索算法（如 A* 算法）规划出一条最优路径</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h3>4. 基于效用的智能体（Utility-Based Agent）</h3>
+                        <p>现实世界的目标往往不是单一的，需要在多个目标之间权衡。</p>
+                        <ul>
+                            <li><strong>核心机制</strong>：为每一个可能的世界状态都赋予一个<strong>效用值</strong></li>
+                            <li><strong>效用值含义</strong>：代表满意度的高低</li>
+                            <li><strong>核心目标</strong>：最大化期望效用</li>
+                            <li><strong>回答的问题</strong>："哪种行为能为我带来最满意的结果？"</li>
+                            <li><strong>实际应用</strong>：导航系统不仅考虑到达目的地，还要权衡：
+                                <ul>
+                                    <li>时间最短</li>
+                                    <li>路程最省油</li>
+                                    <li>避开拥堵</li>
+                                </ul>
+                            </li>
+                            <li><strong>进步意义</strong>：决策更接近人类的理性选择</li>
+                        </ul>
+
+                        <h3>5. 学习型智能体（Learning Agent）</h3>
+                        <p>前面讨论的智能体虽然功能日益复杂，但其核心决策逻辑依然依赖于人类设计师的先验知识。学习型智能体则能通过与环境的互动自主学习。</p>
+                        <ul>
+                            <li><strong>核心思想</strong>：通过与环境的互动自主学习</li>
+                            <li><strong>实现路径</strong>：<strong>强化学习（Reinforcement Learning, RL）</strong></li>
+                            <li><strong>组成部分</strong>：
+                                <ul>
+                                    <li><strong>性能元件</strong>：前面讨论的各类智能体</li>
+                                    <li><strong>学习元件</strong>：观察性能元件的行动结果，不断修正决策策略</li>
+                                </ul>
+                            </li>
+                            <li><strong>经典案例</strong>：AlphaGo Zero
+                                <ul>
+                                    <li>开始时只是随机落子</li>
+                                    <li>通过大量的自我对弈</li>
+                                    <li>逐渐发现哪些棋路更有可能导向最终的胜利</li>
+                                    <li>发现了许多超越人类既有知识的有效策略</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <div class="info-box">
+                            <strong>📈 演进总结：</strong>
+                            <p>从简单的恒温器 → 拥有内部模型的汽车 → 能够规划路线的导航 → 懂得权衡利弊的决策者 → 可以通过经验自我进化的学习者。这条演进之路，展示了传统人工智能在构建机器智能的道路上所经历的发展脉络。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.1.3 智能体的类型 -->
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.1.3 智能体的类型</span>
+                    </div>
+                    <div class="node-content">
+                        <h3>分类维度概述</h3>
+                        <p>智能体可以从三个互补的维度进行分类，每个维度揭示了智能体设计的不同方面。</p>
+
+                        <h3>维度一：基于决策时间与反应性</h3>
+                        <p>这个视角关注智能体是在接收到信息后立即行动，还是会经过深思熟虑的规划再行动。揭示了智能体设计中一个核心权衡：追求速度的<strong>反应性（Reactivity）</strong>与追求最优解的<strong>规划性（Deliberation）</strong>之间的平衡。</p>
+
+                        <h4>1. 反应式智能体（Reactive Agents）</h4>
+                        <ul>
+                            <li><strong>特征</strong>：对环境刺激做出近乎即时的响应，决策延迟极低</li>
+                            <li><strong>决策方式</strong>：遵循从感知到行动的直接映射，不进行或只进行极少的未来规划</li>
+                            <li><strong>优势</strong>：
+                                <ul>
+                                    <li>速度快</li>
+                                    <li>计算开销低</li>
+                                    <li>适合需要快速决策的动态环境</li>
+                                </ul>
+                            </li>
+                            <li><strong>劣势</strong>：
+                                <ul>
+                                    <li>"短视"，缺乏长远规划</li>
+                                    <li>容易陷入局部最优</li>
+                                    <li>难以完成需要多步骤协调的复杂任务</li>
+                                </ul>
+                            </li>
+                            <li><strong>典型应用</strong>：
+                                <ul>
+                                    <li>车辆的安全气囊系统（必须在碰撞发生的毫秒内做出反应）</li>
+                                    <li>高频交易机器人（捕捉稍纵即逝的市场机会）</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h4>2. 规划式智能体（Deliberative Agents）</h4>
+                        <ul>
+                            <li><strong>特征</strong>：在行动前会进行复杂的思考和规划</li>
+                            <li><strong>决策方式</strong>：
+                                <ul>
+                                    <li>利用内部的世界模型</li>
+                                    <li>系统地探索未来的各种可能性</li>
+                                    <li>评估不同行动序列的后果</li>
+                                    <li>找到一条能够达成目标的最佳路径</li>
+                                </ul>
+                            </li>
+                            <li><strong>类比</strong>：像一位棋手，不会只看眼前的一步，而是会预想对手可能的应对，并规划出后续几步甚至十几步的棋路</li>
+                            <li><strong>优势</strong>：
+                                <ul>
+                                    <li>决策的战略性和远见</li>
+                                    <li>能够处理复杂的、需要长远眼光的任务</li>
+                                </ul>
+                            </li>
+                            <li><strong>劣势</strong>：
+                                <ul>
+                                    <li>高昂的时间和计算成本</li>
+                                    <li>在瞬息万变的环境中可能错过最佳时机</li>
+                                </ul>
+                            </li>
+                            <li><strong>典型应用</strong>：
+                                <ul>
+                                    <li>制定商业计划</li>
+                                    <li>规划长途旅行</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h4>3. 混合式智能体（Hybrid Agents）</h4>
+                        <ul>
+                            <li><strong>设计目标</strong>：结合反应式和规划式的优点，实现反应与规划的平衡</li>
+                            <li><strong>经典架构</strong>：分层设计
+                                <ul>
+                                    <li><strong>底层</strong>：快速的反应模块，处理紧急情况和基本动作</li>
+                                    <li><strong>高层</strong>：审慎的规划模块，负责制定长远目标</li>
+                                </ul>
+                            </li>
+                            <li><strong>现代 LLM 智能体的混合模式</strong>：
+                                <ul>
+                                    <li>在"思考-行动-观察"的循环中运作</li>
+                                    <li><strong>规划（Reasoning）</strong>：在"思考"阶段，LLM 分析当前状况，规划下一步行动</li>
+                                    <li><strong>反应（Acting & Observing）</strong>：在"行动"和"观察"阶段，与外部工具或环境交互，立即获得反馈</li>
+                                    <li>将一个需要长远规划的宏大任务，分解为一系列"规划-反应"的微循环</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h3>维度二：基于知识表示</h3>
+                        <p>这是一个更根本的分类维度，探究智能体用以决策的知识，究竟是以何种形式存于其"思想"之中。这个问题是人工智能领域一场持续半个多世纪的辩论核心。</p>
+
+                        <h4>1. 符号主义 AI（Symbolic AI）</h4>
+                        <ul>
+                            <li><strong>核心信念</strong>：智能源于对符号的逻辑操作</li>
+                            <li><strong>符号</strong>：人类可读的实体（如词语、概念）</li>
+                            <li><strong>操作</strong>：遵循严格的逻辑规则</li>
+                            <li><strong>类比</strong>：像一位一丝不苟的图书管理员，将世界知识整理为清晰的规则库和知识图谱</li>
+                            <li><strong>优势</strong>：
+                                <ul>
+                                    <li>透明和可解释</li>
+                                    <li>推理步骤明确</li>
+                                    <li>决策过程可以被完整追溯</li>
+                                    <li>在金融、医疗等高风险领域至关重要</li>
+                                </ul>
+                            </li>
+                            <li><strong>劣势</strong>：
+                                <ul>
+                                    <li>脆弱性：依赖于一个完备的规则体系</li>
+                                    <li>知识获取瓶颈：任何未被覆盖的新情况都可能导致系统失灵</li>
+                                    <li>在充满模糊和例外的现实世界中难以应对</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h4>2. 亚符号主义 AI（Sub-symbolic AI）</h4>
+                        <ul>
+                            <li><strong>别名</strong>：连接主义</li>
+                            <li><strong>核心特征</strong>：知识并非显式的规则，而是内隐地分布在一个由大量神经元组成的复杂网络中</li>
+                            <li><strong>知识形式</strong>：从海量数据中学习到的统计模式</li>
+                            <li><strong>代表技术</strong>：神经网络和深度学习</li>
+                            <li><strong>类比</strong>：像一个牙牙学语的孩童
+                                <ul>
+                                    <li>不是通过学习"猫有四条腿、毛茸茸、会喵喵叫"这样的规则来认识猫</li>
+                                    <li>而是在看过成千上万张猫的图片后，大脑中的神经网络能辨识出"猫"这个概念的视觉模式</li>
+                                </ul>
+                            </li>
+                            <li><strong>优势</strong>：
+                                <ul>
+                                    <li>强大的模式识别能力</li>
+                                    <li>对噪声数据的鲁棒性</li>
+                                    <li>能够轻松处理图像、声音等非结构化数据</li>
+                                </ul>
+                            </li>
+                            <li><strong>劣势</strong>：
+                                <ul>
+                                    <li>不透明性：通常被视为一个<strong>黑箱（Black Box）</strong></li>
+                                    <li>无法给出合乎逻辑的解释</li>
+                                    <li>在纯粹的逻辑推理任务上表现不佳</li>
+                                    <li>有时会产生看似合理却事实错误的幻觉</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h4>3. 神经符号主义 AI（Neuro-Symbolic AI）</h4>
+                        <ul>
+                            <li><strong>设计目标</strong>：融合符号主义和亚符号主义的优点</li>
+                            <li><strong>核心理念</strong>：创造出一个既能像神经网络一样从数据中学习，又能像符号系统一样进行逻辑推理的混合智能体</li>
+                            <li><strong>理论类比</strong>：卡尼曼的双系统理论（《思考，快与慢》）
+                                <ul>
+                                    <li><strong>系统 1</strong>：快速、凭直觉、并行的思维模式 ≈ 亚符号主义 AI 的模式识别能力</li>
+                                    <li><strong>系统 2</strong>：缓慢、有条理、基于逻辑的审慎思维 ≈ 符号主义 AI 的推理过程</li>
+                                </ul>
+                            </li>
+                            <li><strong>实践范例</strong>：大语言模型驱动的智能体
+                                <ul>
+                                    <li>内核是一个巨大的神经网络（模式识别和语言生成能力）</li>
+                                    <li>生成一系列结构化的中间步骤（思想、计划或 API 调用）</li>
+                                    <li>实现了感知与认知、直觉与理性的初步融合</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <div class="success-box">
+                            <strong>🎯 分类的意义：</strong>
+                            <p>理解这些分类维度，有助于我们在设计智能体时做出明智的架构选择，根据具体应用场景选择合适的智能体类型。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 继续添加其他 P1 节点... -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>💡 提示：点击任意节点展开查看详细内容</p>
+            <p>🎯 建议学习路径：P0 → 动手实践 → P1 → 遇到问题再查 P2</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">内容来源：Datawhale《Hello Agents》第一章</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleNode(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.toggle-icon');
+
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                icon.classList.remove('expanded');
+            } else {
+                content.classList.add('show');
+                icon.classList.add('expanded');
+            }
+        }
+    </script>
+</body>
+</html>

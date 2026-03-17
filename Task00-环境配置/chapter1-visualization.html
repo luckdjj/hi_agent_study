@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一章 初识智能体 - 分级学习地图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .priority-section {
+            margin-bottom: 40px;
+        }
+
+        .priority-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .priority-header:hover {
+            transform: translateX(5px);
+        }
+
+        .p0-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .p1-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .p2-header {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .priority-badge {
+            font-size: 1.5em;
+            font-weight: bold;
+            min-width: 60px;
+        }
+
+        .priority-title {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .priority-desc {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-left: auto;
+        }
+
+        .tree {
+            margin-left: 20px;
+        }
+
+        .node {
+            margin: 10px 0;
+            padding-left: 20px;
+            border-left: 2px solid #e2e8f0;
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: #f7fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .node-header:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .toggle-icon {
+            font-size: 0.8em;
+            color: #718096;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .node-title {
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .node-content {
+            display: none;
+            margin-top: 10px;
+            padding: 20px;
+            background: #ffffff;
+            border-left: 3px solid #667eea;
+            border-radius: 6px;
+            color: #4a5568;
+            line-height: 1.8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .node-content.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .node-content pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .node-content code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 第一章 初识智能体</h1>
+        <p class="subtitle">分级学习地图 - 告别教科书式的硬核阅读</p>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                <span><strong>P0</strong> - 必须懂，不懂后面没法继续</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                <span><strong>P1</strong> - 重要但可以边用边学</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                <span><strong>P2</strong> - 了解即可，用到再深入</span>
+            </div>
+        </div>
+
+        <!-- P0 Section -->
+        <div class="priority-section">
+            <div class="priority-header p0-header">
+                <span class="priority-badge">P0</span>
+                <span class="priority-title">核心必学</span>
+                <span class="priority-desc">动手做出第一个智能体的最小必要知识</span>
+            </div>
+
+            <div class="tree">
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.1 什么是智能体？</span>
+                    </div>
+                    <div class="node-content">
+                        <p>在人工智能领域，智能体被定义为任何能够通过<strong>传感器（Sensors）</strong>感知其所处<strong>环境（Environment）</strong>，并<strong>自主</strong>地通过<strong>执行器（Actuators）</strong>采取<strong>行动（Action）</strong>以达成特定目标的实体。</p>
+                        <p><strong>四个基本要素：</strong></p>
+                        <ul>
+                            <li><strong>环境</strong>：智能体所处的外部世界</li>
+                            <li><strong>传感器</strong>：持续感知环境状态（摄像头、麦克风、API等）</li>
+                            <li><strong>执行器</strong>：改变环境状态的工具（机械臂、代码执行等）</li>
+                            <li><strong>自主性</strong>：基于感知和内部状态进行独立决策的能力</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.1.2 大语言模型驱动的新范式</span>
+                    </div>
+                    <div class="node-content">
+                        <p>以 GPT 为代表的大语言模型正在显著改变智能体的构建方法。LLM 智能体与传统智能体的核心区别：</p>
+                        <ul>
+                            <li><strong>核心引擎</strong>：从显式编程规则 → 隐式学习的神经网络</li>
+                            <li><strong>知识来源</strong>：从人工构建知识库 → 海量数据预训练</li>
+                            <li><strong>交互方式</strong>：从结构化指令 → 自然语言对话</li>
+                        </ul>
+                        <p><strong>三大核心能力：</strong></p>
+                        <ol>
+                            <li><strong>规划与推理</strong>：将高层级目标分解为逻辑子任务</li>
+                            <li><strong>工具使用</strong>：主动调用外部工具补全信息缺口</li>
+                            <li><strong>动态修正</strong>：根据反馈调整后续行动</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.2.2 智能体的运行机制</span>
+                    </div>
+                    <div class="node-content">
+                        <p><strong>智能体循环（Agent Loop）</strong>是智能体与环境交互的核心机制：</p>
+                        <ol>
+                            <li><strong>感知（Perception）</strong>：通过传感器接收环境输入</li>
+                            <li><strong>思考（Thought）</strong>：
+                                <ul>
+                                    <li>规划（Planning）：制定或调整行动计划</li>
+                                    <li>工具选择（Tool Selection）：选择合适的工具和参数</li>
+                                </ul>
+                            </li>
+                            <li><strong>行动（Action）</strong>：通过执行器执行具体操作</li>
+                            <li><strong>观察（Observation）</strong>：环境状态变化反馈</li>
+                        </ol>
+                        <p>这个循环持续重复，直到达成目标。</p>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.2.3 智能体的感知与行动</span>
+                    </div>
+                    <div class="node-content">
+                        <p><strong>Thought-Action-Observation 交互协议</strong>是 LLM 智能体的标准交互格式：</p>
+                        <pre><code>Thought: 用户想知道北京的天气。我需要调用天气查询工具。
+Action: get_weather("北京")
+Observation: 北京当前天气为晴，气温25摄氏度，微风。</code></pre>
+                        <ul>
+                            <li><strong>Thought</strong>：智能体内部决策的"快照"，自然语言形式</li>
+                            <li><strong>Action</strong>：具体操作，通常是函数调用</li>
+                            <li><strong>Observation</strong>：环境反馈，处理成自然语言文本</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.3 动手体验：5分钟实现第一个智能体</span>
+                    </div>
+                    <div class="node-content">
+                        <p><strong>目标</strong>：构建一个智能旅行助手，能查询天气并推荐景点。</p>
+                        <p><strong>准备工作：</strong></p>
+                        <pre><code>pip install requests tavily-python openai</code></pre>
+                        <p><strong>核心步骤：</strong></p>
+                        <ol>
+                            <li><strong>指令模板</strong>：设计 system_prompt 告诉 LLM 角色、工具和输出格式</li>
+                            <li><strong>工具定义</strong>：
+                                <ul>
+                                    <li><code>get_weather(city)</code>：查询真实天气</li>
+                                    <li><code>get_attraction(city, weather)</code>：搜索推荐景点</li>
+                                </ul>
+                            </li>
+                            <li><strong>接入 LLM</strong>：使用 OpenAI 兼容接口</li>
+                            <li><strong>执行循环</strong>：构建 Prompt → 调用 LLM → 解析 Action → 执行工具 → 记录 Observation</li>
+                        </ol>
+                        <p>完整代码见原文 1.3 节。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- P1 Section -->
+        <div class="priority-section">
+            <div class="priority-header p1-header">
+                <span class="priority-badge">P1</span>
+                <span class="priority-title">进阶理解</span>
+                <span class="priority-desc">理解智能体生态和选型的背景知识</span>
+            </div>
+
+            <div class="tree">
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.1.1 传统视角下的智能体</span>
+                    </div>
+                    <div class="node-content">
+                        <p>传统智能体的演进路径：</p>
+                        <ul>
+                            <li><strong>反射智能体（Simple Reflex Agent）</strong>：基于"条件-动作"规则，如恒温器</li>
+                            <li><strong>基于模型的反射智能体（Model-Based）</strong>：拥有内部世界模型，能追踪无法直接感知的状态</li>
+                            <li><strong>基于目标的智能体（Goal-Based）</strong>：主动规划达成特定目标，如 GPS 导航</li>
+                            <li><strong>基于效用的智能体（Utility-Based）</strong>：在多个目标间权衡，最大化期望效用</li>
+                            <li><strong>学习型智能体（Learning Agent）</strong>：通过强化学习自我改进，如 AlphaGo</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.1.3 智能体的类型</span>
+                    </div>
+                    <div class="node-content">
+                        <p><strong>基于决策时间维度：</strong></p>
+                        <ul>
+                            <li><strong>反应式智能体</strong>：即时响应，速度快但短视（如安全气囊）</li>
+                            <li><strong>规划式智能体</strong>：深思熟虑，战略性强但耗时（如棋手）</li>
+                            <li><strong>混合式智能体</strong>：结合两者优点，分层设计或循环模式</li>
+                        </ul>
+                        <p><strong>基于知识表示：</strong></p>
+                        <ul>
+                            <li><strong>符号主义 AI</strong>：显式规则和逻辑，可解释但脆弱</li>
+                            <li><strong>亚符号主义 AI</strong>：神经网络，强大但黑箱</li>
+                            <li><strong>神经符号主义 AI</strong>：融合两者，类似卡尼曼的双系统理论</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.2.1 任务环境定义</span>
+                    </div>
+                    <div class="node-content">
+                        <p><strong>PEAS 模型</strong>用于精确描述任务环境：</p>
+                        <ul>
+                            <li><strong>Performance</strong>：性能度量（如用户满意度）</li>
+                            <li><strong>Environment</strong>：环境（如互联网、数据库）</li>
+                            <li><strong>Actuators</strong>：执行器（如 API 调用、语音输出）</li>
+                            <li><strong>Sensors</strong>：传感器（如用户输入、API 返回）</li>
+                        </ul>
+                        <p><strong>环境特性：</strong></p>
+                        <ul>
+                            <li>部分可观察、随机性、多智能体、序贯、动态</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">1.4 智能体应用的协作模式</span>
+                    </div>
+                    <div class="node-content">
+                        <p><strong>1.4.1 作为开发者工具：</strong></p>
+                        <ul>
+                            <li>GitHub Copilot：代码自动补全</li>
+                            <li>Claude Code：终端中的 AI 编程助手</li>
+                            <li>Cursor：AI 原生代码编辑器</li>
+                        </ul>
+                        <p><strong>1.4.2 作为自主协作者：</strong></p>
+                        <ul>
+                            <li>单智能体自主循环（AgentGPT）</li>
+                            <li>多智能体协作（CAMEL、MetaGPT、CrewAI）</li>
+                            <li>高级控制流架构（LangGraph）</li>
+                        </ul>
+                        <p><strong>1.4.3 Workflow vs Agent：</strong></p>
+                        <ul>
+                            <li><strong>Workflow</strong>：预定义流程，确定性强，适合标准化任务</li>
+                            <li><strong>Agent</strong>：目标导向，自主决策，适合复杂动态任务</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- P2 Section -->
+        <div class="priority-section">
+            <div class="priority-header p2-header">
+                <span class="priority-badge">P2</span>
+                <span class="priority-title">扩展阅读</span>
+                <span class="priority-desc">学术背景、历史脉络、理论类比</span>
+            </div>
+
+            <div class="tree">
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">图表和表格</span>
+                    </div>
+                    <div class="node-content">
+                        <ul>
+                            <li>图 1.1：智能体与环境的基本交互循环</li>
+                            <li>图 1.2：简单反射智能体的决策逻辑</li>
+                            <li>图 1.3：智能体决策时间与质量关系</li>
+                            <li>图 1.4：符号主义、亚符号主义与神经符号混合主义</li>
+                            <li>图 1.5：智能体与环境交互的基本循环</li>
+                            <li>图 1.6：Workflow 和 Agent 的差异</li>
+                            <li>表 1.1：传统智能体与 LLM 驱动智能体的核心对比</li>
+                            <li>表 1.2：智能旅行助手的 PEAS 描述</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">理论背景</span>
+                    </div>
+                    <div class="node-content">
+                        <ul>
+                            <li>卡尼曼的双系统理论（《思考，快与慢》）</li>
+                            <li>符号主义 AI 的历史发展</li>
+                            <li>冯·诺依曼结构的计算机架构</li>
+                            <li>强化学习的理论基础</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">习题 1-6</span>
+                    </div>
+                    <div class="node-content">
+                        <p>课后练习题，包括：</p>
+                        <ol>
+                            <li>分析不同案例是否属于智能体</li>
+                            <li>设计智能健身教练的 PEAS 模型</li>
+                            <li>对比 Workflow 和 Agent 方案</li>
+                            <li>扩展智能旅行助手功能</li>
+                            <li>分析双系统理论在智能体中的应用</li>
+                            <li>讨论 LLM 智能体的局限性</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="node">
+                    <div class="node-header" onclick="toggleNode(this)">
+                        <span class="toggle-icon">▶</span>
+                        <span class="node-title">参考文献</span>
+                    </div>
+                    <div class="node-content">
+                        <ul>
+                            <li>[1] RUSSELL S, NORVIG P. Artificial Intelligence: A Modern Approach[M]. 4th ed. London: Pearson, 2020.</li>
+                            <li>[2] KAHNEMAN D. Thinking, Fast and Slow[M]. New York: Farrar, Straus and Giroux, 2011.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>💡 提示：点击任意节点展开查看详细内容</p>
+            <p>🎯 建议学习路径：P0 → 动手实践 → P1 → 遇到问题再查 P2</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleNode(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.toggle-icon');
+
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                icon.classList.remove('expanded');
+            } else {
+                content.classList.add('show');
+                icon.classList.add('expanded');
+            }
+        }
+    </script>
+</body>
+</html>

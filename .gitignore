@@ -1,0 +1,35 @@
+# Secrets
+.env
+.env.*
+!**/.env.template
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+dist/
+build/
+
+# Editors and OS
+.vscode/
+.idea/
+.claude/
+Thumbs.db
+.DS_Store
+*.log
+
+# Upstream reference materials kept only for local study
+/hello-agents/
+/Hello-Agents-*.pdf
+
+# Temporary files
+*.tmp
+*.bak
