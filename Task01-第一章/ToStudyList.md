@@ -7,8 +7,8 @@
 
 ## 今日目标
 
-- [ ] 阅读第一章内容
-- [ ] 理解 Thought-Action-Observation 循环
+- [ ] 阅读第一章内容 完成
+- [ ] 理解 Thought-Action-Observation 循环：though的过程中程序的AGENT_SYSTEM_PROMPT 很重要
 - [ ] 完成课后习题
 - [ ] 整理笔记
 - [ ] 保存五分钟快速构建智能体截图
