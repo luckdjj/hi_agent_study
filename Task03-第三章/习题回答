@@ -1,1 +1,24 @@
+1. 
+对于第一问计算agent work在Bigram模型下的概率计算为1/6
+代码如下：
+import collections
+# 示例语料库，与上方案例讲解中的语料库保持一致
+corpus = "datawhale agent learns datawhale agent works"
+tokens = corpus.split()
+total_tokens = len(tokens)
+# --- 第一步:计算 P(agent) ---
+count_agent = tokens.count('agent')
+p_agent = count_agent / total_tokens
+print(f"第一步: P(agent) = {count_agent}/{total_tokens} = {p_agent:.3f}")
+# --- 第二步:计算 P(agent|works) ---
+# 先计算 bigrams 用于后续步骤
+bigrams = zip(tokens, tokens[1:])
+bigram_counts = collections.Counter(bigrams)
+count_data_agent = bigram_counts[('agent', 'works')]
+# count_data 已在第一步计算
+p_agent_given_data = count_data_agent / count_agent
+print(f"第二步: P(agent|works) = {count_data_agent}/{count_agent} = {p_agent_given_data:.3f}")
+# --- 最后:将概率连乘 ---
+p_sentence = p_agent * p_agent_given_data
+print(f"最后: P('agent works') ≈ {p_agent:.3f} * {p_agent_given_data:.3f} = {p_sentence:.3f}")
 
